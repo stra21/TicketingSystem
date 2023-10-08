@@ -1,0 +1,90 @@
+﻿@using DL.Models;
+@model List<Call>;
+<div class="row">
+    <div class=" col-md-12">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Calls</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="panel panel-primary filterable" style="overflow:auto">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <button class="btn btn-default btn-xs btn-filter"><span class="glyphicon glyphicon-filter"></span>Click To Apply Filter</button>
+                                <a class="text-success" href="/Calls/Call">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                            </h3>
+                        </div>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr class="filters">
+                                    <th>Actions</th>
+                                    <th><input type="text" placeholder="FkRefCall" disabled></th>
+                                    <th><input type="text" placeholder="Call Log Date" disabled></th>
+                                    <th><input type="text" placeholder="Closing Date" disabled></th>
+                                    <th><input type="text" placeholder="Description" disabled></th>
+                                    <th><input type="text" placeholder="Subject" disabled></th>
+                                    <th><input type="text" placeholder="Support Status" disabled></th>
+                                    <th><input type="text" placeholder="UserStatus" disabled></th>
+                                    <th><input type="text" placeholder="Call Type" disabled></th>
+                                    <th><input type="text" placeholder="User Priority" disabled></th>
+                                    <th><input type="text" placeholder="Module" disabled></th>
+                                    <th><input type="text" placeholder="Reported By" disabled></th>
+                                    <th><input type="text" placeholder="Status Date" disabled></th>
+                                    <th><input type="text" placeholder="Url/Form Name" disabled></th>
+                                    <th><input type="text" placeholder="Assigned To" disabled></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var call in Model)
+                                {
+                                    <tr>
+                                        <td style="position:absolute;border:none;">
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <a class="text-info" href="/Calls/Call/@call.Id">
+                                                        <i class="fas fa-pencil-alt"></i>
+                                                    </a>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <a class="text-danger" href="/Calls/Delete/@call.Id">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@call.FkRefCallNavigation?.Subject</td>
+                                        <td>@call.CreationDateTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@call.ClosingDate</td>
+                                        <td>@call.Description</td>
+                                        <td>@call.Subject</td>
+                                        <td>@Enum.GetName(typeof(BL.Enums.SupportStatuses),call.SupportStatus)</td>
+                                        <td>@Enum.GetName(typeof(BL.Enums.UserStatuses),call.UserStatus)</td>
+                                        <td>
+                                            @call.FkCallTypeNavigation.TypeName
+                                        </td>
+                                        <td>@Enum.GetName(typeof(BL.Enums.Priority),call.Priority)</td>
+                                        <td>
+                                            @call.FkModuleNavigation.ModuleName
+                                        </td>
+                                        <td>@call.FkCreatedByNavigation.UserName</td>
+                                        <td>@call.StatusDate</td>
+                                        <td>@call.FormIdentifier</td>
+                                        <td>@call.FkAssignedToNavigation?.UserName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

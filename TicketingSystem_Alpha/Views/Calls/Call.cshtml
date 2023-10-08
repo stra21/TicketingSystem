@@ -1,0 +1,273 @@
+﻿@using DL.Utilities
+@model DL.Models.Call
+<script>
+    $(function () {
+        console.log($("#hasRef")[0].checked);
+        if ($("#hasRef")[0].checked) {
+            $("#ref_div").css("display", "block");
+        }
+    });
+    function checkChanged(event) {
+        //console.log(event);
+        if (event.target.checked) {
+            $("#ref_div").css("display", "block");
+        }
+        else {
+            $("#ref_div").css("display", "none");
+            $("#FKRefCall").val("0");
+        }
+    }
+    function openImage(imagePath) {
+        $("#popup").css("display", "block");
+        $("#dynamicImageLoader").attr('src', imagePath);
+    }
+    function closePopup() {
+        $("#popup").css("display", "none");
+    }
+    function startUpload() {
+        $("#uploader").click();
+    }
+    function postComment() {
+        let comment = $("#message")[0].value;
+        let callId = $("#id")[0].value;
+        $.ajax({
+            url: "@Url.Action("PostComment","Comments")",
+            type: "POST",
+            data: { comment: comment, callId: callId },
+            success: function (response) {
+                window.location.reload();
+            },
+            error: function (xhr, status, error) {
+            }
+        });
+    }
+</script>
+<div class="row">
+    <div class=" col-md-12">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Calls</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("Update", "Calls", FormMethod.Post, new { @enctype = "multipart/form-data" }))
+                {
+                    <input type="hidden" id="id" name="id" value="@Model.Id">
+                    <input type="hidden" name="FKCreatedBy" value="@Model.FkCreatedBy">
+                    <input type="hidden" name="CreationDateTime" value="@Model.CreationDateTime">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label class="form-label">Call Type</label>
+                            <select name="FkCallType" class="form-control">
+                                @foreach (var callType in ViewBag.callTypes)
+                                {
+                                    if (callType.Id != Model.FkCallType)
+                                    {
+                                        <option value="@callType.Id">@callType.TypeName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@callType.Id" selected>@callType.TypeName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="form-label">Module</label>
+                            <select name="FkModule" class="form-control">
+                                @foreach (var module in ViewBag.modules)
+                                {
+                                    if (module.Id != Model.FkModule)
+                                    {
+                                        <option value="@module.Id">@module.ModuleName</option>
+                                    }
+                                    else
+                                    {
+                                        <option selected value="@module.Id">@module.ModuleName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="form-label">URL / Form Name</label>
+                            <input name="FormIdentifier" type="text" class="form-control" value="@Model.FormIdentifier" />
+                        </div>
+                        <div class="col-sm-1">
+                            <label class="form-label">Recurring Call</label>
+                            @if (Model.FkRefCall is null)
+                            {
+                                <input id="hasRef" name="hasRef" type="checkbox" onchange="checkChanged(event)" value="@Model.FkRefCall !=null" />
+                            }
+                            else
+                            {
+                                <input id="hasRef" name="hasRef" type="checkbox" onchange="checkChanged(event)" value="@Model.FkRefCall !=null" checked />
+                            }
+                        </div>
+                        <div class="col-sm-2" style="display:none" id="ref_div">
+                            <label class="form-label">Reference Call</label>
+                            @Html.DropDownList("FkRefCall",(ViewBag.refCalls as List<SelectListItem>),new {@class="form-control",@name="FkRefCall",@id="FKRefCall"})
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label class="form-label">Priority</label>
+                            @Html.DropDownList("Priority",(ViewBag.priorities as List<SelectListItem>),new {@class="form-control",@name="Priority"})
+                        </div>
+                        @if (Model.Id > 0)
+                        {
+                            <div class="col-sm-3">
+                                <label class="form-label">User Status</label>
+                                @Html.DropDownList("UserStatus",(ViewBag.userStatus as List<SelectListItem>),new {@class="form-control",@name="UserStatus"})
+                            </div>
+                        }
+                        @if (((BL.Enums.SystemRolesEnum)ViewBag.userType) != BL.Enums.SystemRolesEnum.Guest)
+                        {
+                            <div class="col-sm-3">
+                                <label class="form-label">Support Status</label>
+                                @Html.DropDownList("SupportStatus",(ViewBag.supportStatus as List<SelectListItem>),new {@class="form-control",@name="SupportStatus"})
+                            </div>
+                        }
+                        else
+                        {
+                            <input type="hidden" name="SupportStatus" value="@Model.SupportStatus">
+                        }
+                        @if (((BL.Enums.SystemRolesEnum)ViewBag.userType) == BL.Enums.SystemRolesEnum.Admin)
+                        {
+                            <div class="col-sm-3">
+                                <label class="form-label">Assign To</label>
+                                <select name="FkAssignedTo" class="form-control">
+                                    <option value="0">Select Team Member</option>
+                                    @foreach (var user in ViewBag.users)
+                                    {
+                                        if (user.Id != Model.FkAssignedTo)
+                                        {
+                                            <option value="@user.Id">@user.UserName</option>
+                                        }
+                                        else
+                                        {
+                                            <option selected value="@user.Id">@user.UserName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        }
+                        else
+                        {
+                            <input type="hidden" name="FkAssignedTo" value="@Model.FkAssignedTo">
+                        }
+
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-1">
+                            <label class="form-label">Subject</label>
+                        </div>
+                        <div class="col-sm-11">
+                            <input name="Subject" required type="text" class="form-control" value="@Model.Subject" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-1">
+                            <label class="form-label">Description</label>
+                        </div>
+                        <div class="col-sm-11">
+                            <textarea name="Description" rows="5" class="form-control" value="@Model.Description">@Model.Description</textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-1">
+                            <label class="form-label">Suggestions</label>
+                        </div>
+                        <div class="col-sm-11">
+                            <textarea name="Suggestion" rows="5" class="form-control" value="@Model.Suggestion">@Model.Suggestion</textarea>
+                        </div>
+                        <input id="uploader" name="postedFile" multiple type="file" style="display:none" />
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <button type="button" onclick="startUpload()" class="btn btn-success float-left">Upload Files</button>
+                            <button type="submit" class="btn btn-success float-right">Save</button>
+                        </div>
+                    </div>
+                    <div class="col-12 product-image-thumbs">
+                        @foreach (var img in Model.UploadedFiles)
+                        {
+                            @if (img.FilePath.IsImage())
+                            {
+                                <div class="product-image-thumb" onclick="openImage('@Url.Content("~/"+@img.FilePath)')"><img src="@Url.Content("~/"+@img.FilePath)" alt="Product Image"></div>
+                            }
+                            else
+                            {
+                                <div class="product-image-thumb">
+                                    <a class="text-success" title="@img.FilePath.StringifyPath()" href="@Url.Content("~/"+@img.FilePath)" download="@img.FilePath.StringifyPath()">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+@if (Model.Id > 0)
+{
+    <div class="card direct-chat direct-chat-primary">
+        <div class="card-header ui-sortable-handle" style="cursor: move;">
+            <h3 class="card-title">Comments</h3>
+
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <!-- Conversations are loaded here -->
+            <div class="direct-chat-messages">
+                <!-- Message. Default to the left -->
+                @foreach (var message in Model.Comments)
+                {
+                    bool isSelfComment = ViewBag.userId == message.FkCommenterId;
+                    var commenterName = isSelfComment ? "Me" : message.FkCommenter.UserName;
+                    var commentDirection = isSelfComment ? "right" : "left";
+                    <div class="direct-chat-msg @commentDirection">
+                        <div class="direct-chat-infos clearfix">
+                            <span class="direct-chat-name float-@commentDirection">@commenterName</span>
+                        </div>
+                        <!-- /.direct-chat-infos -->
+                        @*<img class="direct-chat-img" src="dist/img/user1-128x128.jpg" alt="message user image">*@
+                        <!-- /.direct-chat-img -->
+                        <div class="direct-chat-text">
+                            @message.Comment1
+                        </div>
+                        <!-- /.direct-chat-text -->
+                    </div>
+                }
+            </div>
+        </div>
+        <!-- /.card-body -->
+        <div class="card-footer">
+            <div class="input-group">
+                <input type="text" id="message" name="message" placeholder="Type Message ..." class="form-control">
+                <span class="input-group-append">
+                    <button type="button" onclick="postComment()" class="btn btn-primary">Send</button>
+                </span>
+            </div>
+        </div>
+        <!-- /.card-footer-->
+    </div>
+}
+
+<div id="popup" class="popup">
+    <img src="" onclick="closePopup()" id="dynamicImageLoader" alt="Image" />
+</div>

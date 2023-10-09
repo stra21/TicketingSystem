@@ -59,7 +59,7 @@ namespace BL.Services
             {
                 call.StatusDate = DateTime.UtcNow;
             }
-            else
+            else if(oldCall is not null)  
             {
                 call.StatusDate = oldCall.StatusDate;
             }
@@ -67,7 +67,7 @@ namespace BL.Services
             {
                 call.ClosingDate = DateTime.UtcNow;
             }
-            else
+            else if(oldCall is not null)
             {
                 call.ClosingDate= oldCall.ClosingDate;
             }
